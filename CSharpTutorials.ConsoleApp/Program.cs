@@ -1,5 +1,7 @@
 ﻿
 
+using System.Drawing;
+
 namespace CSharpTutorials.ConsoleApp
 {
     public static class Program
@@ -203,11 +205,64 @@ namespace CSharpTutorials.ConsoleApp
 
         #endregion
 
+        #region Threading
+
+        /*
+            //Approch 1: Create Thread and Start it
+            //--------------------------
+
+            var threadA = new Thread(ProcessA);
+            var threadB = new Thread(ProcessB);
+
+            threadA.Start();
+            threadB.Start();
+
+            //Approch 2: Use ThreadPool to Queue the Threads and Start it
+            //------------------------------------------------
+
+            ThreadPool.QueueUserWorkItem((state)=>ProcessA());
+            ThreadPool.QueueUserWorkItem((state) => ProcessB());
+
+
+         */
+
+        public static object _lock = new object();
+
+        public static void ProcessA()
+        {
+            for (int i = 0; i < 1000; i++)
+            {
+                lock (_lock)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Green - {i}");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                
+            }
+        }
+
+        public static void ProcessB()
+        {
+            for (int i = 1001; i < 2000; i++)
+            {
+                lock (_lock)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Red - {i}");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                
+            }
+        }
+
+        #endregion
+
         public static void Main(string[] args)
         {
             
 
-
+            Console.WriteLine("Hello World");
             Console.ReadKey();
         }
     }
