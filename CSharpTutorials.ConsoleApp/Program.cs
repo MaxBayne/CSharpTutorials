@@ -1,10 +1,13 @@
 ﻿
 
+using System.Collections;
+using System.ComponentModel;
 using System.Drawing;
+using System.Numerics;
 
 namespace CSharpTutorials.ConsoleApp
 {
-    public static class Program
+    public class Program
     {
         #region Delegates
 
@@ -224,12 +227,32 @@ namespace CSharpTutorials.ConsoleApp
             ThreadPool.QueueUserWorkItem((state) => ProcessB());
 
 
+            //Approch 3: Use Task.Run As ThreadPool to Queue the Tasks and Start it
+            //------------------------------------------------
+            Task.Run(()=>DoJobA());
+
+            //Task A Will Run after it finish Task B will Run , compiler will wait TaskA and will wait TaskB 
+
+            var taskA  = ProcessA_Async();
+
+            var taskB = await taskA.ContinueWith((taskA)=> ProcessB_Async());
+
+            await taskB;
+
+
+
+        
+
+
+
          */
 
         public static object _lock = new object();
 
         public static void ProcessA()
         {
+            Console.WriteLine($"Process-A Thread Id = {Environment.CurrentManagedThreadId}");
+
             for (int i = 0; i < 1000; i++)
             {
                 lock (_lock)
@@ -244,6 +267,8 @@ namespace CSharpTutorials.ConsoleApp
 
         public static void ProcessB()
         {
+            Console.WriteLine($"Process-B Thread Id = {Environment.CurrentManagedThreadId}");
+
             for (int i = 1001; i < 2000; i++)
             {
                 lock (_lock)
@@ -256,14 +281,265 @@ namespace CSharpTutorials.ConsoleApp
             }
         }
 
+        public static async Task ProcessA_Async()
+        {
+            await Task.Delay(1);
+
+            Console.WriteLine($"Process-A Async Thread Id = {Environment.CurrentManagedThreadId}");
+
+            for (int i = 0; i < 1000; i++)
+            {
+                lock (_lock)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Green - {i}");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+            }
+        }
+
+        public static async Task ProcessB_Async()
+        {
+            await Task.Delay(1);
+
+            Console.WriteLine($"Process-B Async Thread Id = {Environment.CurrentManagedThreadId}");
+
+            for (int i = 1001; i < 2000; i++)
+            {
+                lock (_lock)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Red - {i}");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+
+            }
+        }
+
         #endregion
 
-        public static void Main(string[] args)
-        {
+        #region Collections::Enumerables
+
+        /*
+            //Create Invoice
+            var invoice = new Invoice(1000,"Sales Invoice");
+
+            //Create Items For Invoice
+            invoice.AddItem("1", "Product A", 1.0, 150.10);
+            invoice.AddItem("2", "Product B", 2.0, 120.00);
+            invoice.AddItem("3", "Product C", 3.0, 170.50);
+            invoice.AddItem("4", "Product D", 4.0, 180.10);
+            invoice.AddItem("5", "Product E", 5.0, 140.20);
+
             
+            Console.WriteLine("ForEach Loop For Items of Invoice using List");
+            Console.WriteLine("====================================");
+            foreach (var item in invoice.Items)
+            {
+                Console.WriteLine($"Code={item.Code},Name={item.Name},Quantity={item.Quantity},UnitPrice={item.UnitPrice},Total={item.Total}");
+                Console.WriteLine("-------------------------------------------------------------");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("ForEach Loop For Items of Invoice using IEnumerator");
+            Console.WriteLine("===========================================");
+           
+            foreach (var item in invoice)
+            {
+                Console.WriteLine($"Code={item.Code},Name={item.Name},Quantity={item.Quantity},UnitPrice={item.UnitPrice},Total={item.Total}");
+                Console.WriteLine("-------------------------------------------------------------");
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("For Loop For Items of Invoice using IEnumerator");
+            Console.WriteLine("===========================================");
+
+            for (int i = 0; i < invoice.Count(); i++)
+            {
+                Console.WriteLine($"Code={invoice[i].Code},Name={invoice[i].Name},Quantity={invoice[i].Quantity},UnitPrice={invoice[i].UnitPrice},Total={invoice[i].Total}");
+                Console.WriteLine("-------------------------------------------------------------");
+            }
+            
+            */
+
+        public class InvoiceItem
+        {
+            public InvoiceItem(string code,string name,double quantity,double unitPrice)
+            {
+                Code = code;
+                Name = name;
+                Quantity = quantity;
+                UnitPrice = unitPrice;
+            }
+
+            public string Code { get; private set; }
+            public string Name { get; private set; }
+            public double Quantity { get; private set; }
+            public double UnitPrice { get; private set; }
+            public double Total => Quantity * UnitPrice;
+        }
+
+        public class Invoice: IEnumerable<InvoiceItem> 
+        {
+            #region Properties
+
+
+            public int InvoiceId { get; private set; }
+            public DateTime InvoiceDate { get; private set; }
+            public string InvoiceNotes { get; private set; }
+
+            private readonly List<InvoiceItem> _items;
+            public IReadOnlyList<InvoiceItem> Items => _items.AsReadOnly();
+
+            #endregion
+
+            #region Constructors
+
+            public Invoice(int id,string notes)
+            {
+                InvoiceId = id;
+                InvoiceDate = DateTime.Now;
+                InvoiceNotes = notes;
+                _items = new();
+            }
+
+            #endregion
+            
+
+            #region Items Methods
+
+            public void AddItem(string code, string name, double quantity, double unitPrice)
+            {
+                _items.Add(new InvoiceItem(code,name,quantity,unitPrice));
+            }
+            public void RemoveItem(string code)
+            {
+                var itemToRemove = _items.Find((c) => c.Code == code);
+                if(itemToRemove!=null)
+                    _items.Remove(itemToRemove);
+            }
+            public void RemoveItem(int index)
+            {
+                _items.RemoveAt(index);
+            }
+
+
+
+            #endregion
+
+            #region IEnumerable Methods
+
+            public IEnumerator<InvoiceItem> GetEnumerator()
+            {
+                //return _items.GetEnumerator();
+
+                //or
+
+                foreach (var item in _items)
+                {
+                    yield return item;
+                }
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            #endregion
+
+            #region Support Index Like Array or List
+            
+            public InvoiceItem this[int index] => _items[index];
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Generic
+
+        /*
+            var stringRepo = new Repository<string>();
+
+            stringRepo.Add("Ahmed");
+            stringRepo.Add("Ali");
+            stringRepo.Add("Khalid");
+            stringRepo.Add("Mostafa");
+
+            var result = Add<decimal>(100,500);
+
+         */
+
+       
+
+        //Generic Class with Constraints
+        public class Repository<TEntity,TDbContext> where TEntity:class,new()
+                                                    where TDbContext:class,new()
+        {
+            private readonly TDbContext _dbContext;
+            private readonly List<TEntity> _entities;
+
+            public Repository()
+            {
+                _dbContext = new();
+                _entities = new List<TEntity>();
+            }
+
+            public void Add(TEntity entity)
+            {
+                _entities.Add(entity);
+            }
+
+            public void Remove(TEntity entity)
+            {
+                _entities.Remove(entity);
+            }
+
+            public TEntity Find(Predicate<TEntity> predicate)
+            {
+                return _entities.Find(predicate)!;
+            }
+        }
+
+        //Generic Interface
+        public interface IRepository<TEntity> where TEntity:class
+        {
+            void Add(TEntity entity);
+
+            void Remove(TEntity entity);
+
+            TEntity Find(Predicate<TEntity> predicate);
+        }
+
+        //Generic Methods
+        public void AddToRepository<TRepository>(TRepository entity)
+        {
+            Repository<TRepository> repository=new();
+
+            repository.Add(entity);
+        }
+        
+        public static T Add<T>(T number1, T number2) where T : INumber<T>
+        {
+            return number1 + number2;
+        }
+        
+        #endregion
+
+
+        public static async Task Main(string[] args)
+        {
+
+            
+
+
 
             Console.WriteLine("Hello World");
             Console.ReadKey();
+
+            
         }
     }
 
