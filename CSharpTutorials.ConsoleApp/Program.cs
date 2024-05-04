@@ -516,23 +516,184 @@ namespace CSharpTutorials.ConsoleApp
         //Generic Methods
         public void AddToRepository<TRepository>(TRepository entity)
         {
-            Repository<TRepository> repository=new();
+            //Repository<TRepository> repository=new();
 
-            repository.Add(entity);
+            //repository.Add(entity);
         }
         
         public static T Add<T>(T number1, T number2) where T : INumber<T>
         {
             return number1 + number2;
         }
-        
+
         #endregion
 
+        #region LINQ
+
+        #region LINQ Syntax
+        /*
+            int[] numbers = new int[] {1,5,8,12,48,50,120 };
+
+            //Linq Expression
+            var maxFor12ByExpression = from number in numbers where number > 12 select number;
+
+            //Linq Methods
+            var maxFor12ByMethod = numbers.Where(c => c > 12);
+
+            foreach (var number in maxFor12ByExpression)
+            {
+                Console.WriteLine(number);
+            }
+
+         */
+        #endregion
+
+        #region LINQ SELECT
+        /*
+            var employees = new List<Employee>()
+            {
+                new Employee(1,"mohammed",1700,210,120),
+                new Employee(2,"ahmed",1250,150,120),
+                new Employee(3,"khalid",4000,350,120),
+                new Employee(4,"mohammed",500,450,120),
+                new Employee(5,"ali",1400,950,120),
+                new Employee(6,"hoda",1200,710,120),
+                new Employee(7,"ahmed",1100,410,120)
+            };
+
+            //Linq Expression
+            var selectByExpression = from employee in employees
+                                   where employee.Name!=string.Empty
+                                   orderby employee.Name,employee.BasicSalary
+                                   select new { employee.Name,employee.BasicSalary };
+
+            //Linq Methods
+            var selectByMethod = employees.Where(c => c.Name!=string.Empty)
+                                        .OrderBy(o=>o.Name)
+                                        .ThenBy(o=>o.BasicSalary)
+                                        .Select(s=>new
+                                        {
+                                            Name=s.Name,
+                                            BasicSalary=s.BasicSalary
+                                        });
+
+            foreach (var emp in selectByExpression)
+            {
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
+
+            }
+
+            Console.WriteLine();
+
+            foreach (var emp in selectByMethod)
+            {
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
+
+            }
+
+
+         */
+        #endregion
+
+        #region LINQ SORTING
+
+        /*
+            var employees = new List<Employee>()
+            {
+                new Employee(1,"mohammed",1700,210,120),
+                new Employee(2,"ahmed",1250,150,120),
+                new Employee(3,"khalid",4000,350,120),
+                new Employee(4,"mohammed",500,450,120),
+                new Employee(5,"ali",1400,950,120),
+                new Employee(6,"hoda",1200,710,120),
+                new Employee(7,"ahmed",1100,410,120)
+            };
+
+            //Linq Expression
+            var sortByExpression = from employee in employees
+                                   where employee.Name!=string.Empty
+                                   orderby employee.Name,employee.BasicSalary
+                                   select employee;
+
+            //Linq Methods
+            var sortByMethod = employees.Where(c => c.Name!=string.Empty)
+                                        .OrderBy(o=>o.Name)
+                                        .ThenBy(o=>o.BasicSalary)
+                                        .Select(s=>s);
+
+            foreach (var emp in sortByExpression)
+            {
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
+
+            }
+
+            Console.WriteLine();
+
+            foreach (var emp in sortByMethod)
+            {
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
+
+            }
+
+         */
+
+        #endregion
+
+        #region LINQ QUANTIFIERS (ANY,ALL,CONTAINS)
+
+        #endregion
+
+        #endregion
 
         public static async Task Main(string[] args)
         {
+            int[] numbers = new int[] {1,5,8,12,48,50,120 };
+            var employees = new List<Employee>()
+            {
+                new Employee(1,"mohammed",1700,210,120),
+                new Employee(2,"ahmed",1250,150,120),
+                new Employee(3,"khalid",4000,350,120),
+                new Employee(4,"mohammed",500,450,120),
+                new Employee(5,"ali",1400,950,120),
+                new Employee(6,"hoda",1200,710,120),
+                new Employee(7,"ahmed",1100,410,120)
+            };
 
-            
+            //Linq Expression
+            var selectByExpression = from employee in employees
+                                   where employee.Name!=string.Empty
+                                   orderby employee.Name,employee.BasicSalary
+                                   select new { employee.Name,employee.BasicSalary };
+
+            //Linq Methods
+            var selectByMethod = employees.Where(c => c.Name!=string.Empty)
+                                        .OrderBy(o=>o.Name)
+                                        .ThenBy(o=>o.BasicSalary)
+                                        .Select(s=>new
+                                        {
+                                            Name=s.Name,
+                                            BasicSalary=s.BasicSalary
+                                        });
+
+            foreach (var emp in selectByExpression)
+            {
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
+
+            }
+
+            Console.WriteLine();
+
+            foreach (var emp in selectByMethod)
+            {
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
+
+            }
+
+
+
+
+
+
 
 
 
