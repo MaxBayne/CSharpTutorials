@@ -4,6 +4,8 @@ using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Numerics;
+using System.Xml.Linq;
+using static CSharpTutorials.ConsoleApp.Program;
 
 namespace CSharpTutorials.ConsoleApp
 {
@@ -64,6 +66,18 @@ namespace CSharpTutorials.ConsoleApp
             emp.SetSalary(1000,500,120);
          */
 
+        public class Department
+        {
+            public int Id { get; private set; }
+            public string Name { get; private set; }
+
+            public Department(int id,string name)
+            {
+                Id = id;
+                Name = name;
+            }
+        }
+
         public class Employee
         {
             #region Events
@@ -113,30 +127,35 @@ namespace CSharpTutorials.ConsoleApp
             /// </summary>
             public decimal NetSalary { get; private set; }
 
+            public int DepartmentId { get; private set; }
+
             #endregion
 
             #region Constructor
 
-            public Employee(int id, string name)
+            public Employee(int id, string name,int departmentId)
             {
                 Id = id;
                 Name = name;
+                DepartmentId = departmentId;
             }
-            public Employee(int id, string name, decimal basicSalary)
+            public Employee(int id, string name, decimal basicSalary, int departmentId)
             {
                 Id = id;
                 Name = name;
                 BasicSalary = basicSalary;
+                DepartmentId = departmentId;
 
                 CalculateNetSalary();
             }
-            public Employee(int id,string name,decimal basicSalary,decimal bonus,decimal deduction)
+            public Employee(int id,string name,decimal basicSalary,decimal bonus,decimal deduction, int departmentId)
             {
                 Id = id;
                 Name = name;
                 BasicSalary = basicSalary;
                 Bonus = bonus;
                 Deduction = deduction;
+                DepartmentId = departmentId;
 
                 CalculateNetSalary();
             }
@@ -144,6 +163,11 @@ namespace CSharpTutorials.ConsoleApp
             #endregion
 
             #region Actions
+
+            public void SetDepartment(int departmentId)
+            {
+                DepartmentId = departmentId;
+            }
 
             public void SetName(string name)
             {
@@ -640,14 +664,34 @@ namespace CSharpTutorials.ConsoleApp
         #endregion
 
         #region LINQ QUANTIFIERS (ANY,ALL,CONTAINS)
+        /*
+            int[] numbers = new int[] { 1, 5, 8, 12, 48, 50, 120 };
 
+            bool isAll = numbers.All(x => x is INumber<int>);
+            bool isAny = numbers.Any();
+            bool isContains = numbers.Contains(48);
+         */
         #endregion
 
+        #region LINQ PARTITIONING
+
+        /*
+        int[] numbers = new int[] { 1, 5, 8, 12, 48, 50, 120 };
+
+        var skip = numbers.Skip(3);
+        var skipLast = numbers.SkipLast(3);
+        var skipWhile = numbers.SkipWhile(c => c <= 12);
+
+        var take = numbers.Take(3);
+        var takeLast = numbers.TakeLast(3);
+        var takeWhile = numbers.TakeWhile(c => c <= 12);
+
+        var chunks = numbers.Chunk(3);
+        */
         #endregion
 
-        public static async Task Main(string[] args)
-        {
-            int[] numbers = new int[] {1,5,8,12,48,50,120 };
+        #region LINQ SET OPERATIONS
+        /*
             var employees = new List<Employee>()
             {
                 new Employee(1,"mohammed",1700,210,120),
@@ -658,42 +702,162 @@ namespace CSharpTutorials.ConsoleApp
                 new Employee(6,"hoda",1200,710,120),
                 new Employee(7,"ahmed",1100,410,120)
             };
+            
+
+            var distinct = employees.DistinctBy(e => e.Name).ToList();
+            var except = employees.ExceptBy(new List<string> { "ahmed","mohammed"},emp=>emp.Name).ToList();
+            var union = employees.Union(new List<Employee> { new Employee(100, "aya"), new Employee(200, "mostafa") });
+
+         */
+        #endregion
+
+        #region LINQ JOINS
+
+        /*
+         var departments = new List<Department>()
+            {
+                new Department(1,"HR"),
+                new Department(2,"Payroll"),
+                new Department(3,"Finance"),
+                new Department(4,"Development"),
+                new Department(5,"IT")
+            };
+            var employees = new List<Employee>()
+            {
+                new Employee(1,"mohammed",1700,210,120,1),
+                new Employee(2,"ahmed",1250,150,120,1),
+                new Employee(3,"khalid",4000,350,120,2),
+                new Employee(4,"mohammed",500,450,120,3),
+                new Employee(5,"ali",1400,950,120,3),
+                new Employee(6,"hoda",1200,710,120,4),
+                new Employee(7,"ahmed",1100,410,120,5)
+            };
+           
 
             //Linq Expression
             var selectByExpression = from employee in employees
-                                   where employee.Name!=string.Empty
-                                   orderby employee.Name,employee.BasicSalary
-                                   select new { employee.Name,employee.BasicSalary };
+                                     join department in departments on employee.DepartmentId equals department.Id
+                                     select new 
+                                     {
+                                         Name = employee.Name,
+                                         BasicSalary=employee.BasicSalary,
+                                         Department=department.Name
+                                     };
 
             //Linq Methods
-            var selectByMethod = employees.Where(c => c.Name!=string.Empty)
-                                        .OrderBy(o=>o.Name)
-                                        .ThenBy(o=>o.BasicSalary)
-                                        .Select(s=>new
+            var selectByMethod = employees.Join(departments,
+                                        employee => employee.DepartmentId,
+                                        department => department.Id,
+                                        (employee, department) => new 
                                         {
-                                            Name=s.Name,
-                                            BasicSalary=s.BasicSalary
+                                            Name = employee.Name,
+                                            BasicSalary = employee.BasicSalary,
+                                            Department = department.Name
                                         });
+                                       
 
             foreach (var emp in selectByExpression)
             {
-                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
-
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary},Department={emp.Department}");
             }
 
             Console.WriteLine();
 
             foreach (var emp in selectByMethod)
             {
-                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary}");
-
+                Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary},Department={emp.Department}");
             }
 
 
 
 
+         */
+
+        #endregion
+
+        #region LINQ GROUPING
+        /*
+            var departments = new List<Department>()
+            {
+                new Department(1,"HR"),
+                new Department(2,"Payroll"),
+                new Department(3,"Finance"),
+                new Department(4,"Development"),
+                new Department(5,"IT")
+            };
+            var employees = new List<Employee>()
+            {
+                new Employee(1,"mohammed",1700,210,120,1),
+                new Employee(2,"ahmed",1250,150,120,1),
+                new Employee(3,"khalid",4000,350,120,2),
+                new Employee(4,"mohammed",500,450,120,3),
+                new Employee(5,"ali",1400,950,120,3),
+                new Employee(6,"hoda",1200,710,120,4),
+                new Employee(7,"ahmed",1100,410,120,5)
+            };
 
 
+            //Linq Expression
+            var groupByExpression = from employee in employees
+                                    join department in departments on employee.DepartmentId equals department.Id
+                                    group employee by department.Name;
+
+            //Linq Methods
+            var groupByMethod = employees.Join(departments,
+                                       (employee)=>employee.DepartmentId,
+                                       (department)=>department.Id,
+                                         (employee,department)=>new
+                                         {
+                                             Employee = employee,
+                                             Department = department
+                                         })
+                                         .GroupBy(key=>key.Department.Name,element=>element.Employee);
+                                       
+
+            foreach (var departmentGroup in groupByExpression)
+            {
+                Console.WriteLine();
+
+                Console.WriteLine($"Department={departmentGroup.Key}");
+                Console.WriteLine("-----------------------------");
+
+                foreach (var emp in departmentGroup)
+                {
+                    Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary},DepartmentId={emp.DepartmentId}");    
+                }
+
+                Console.WriteLine();
+
+            }
+           
+            Console.WriteLine();
+
+            foreach (var departmentGroup in groupByMethod)
+            {
+                Console.WriteLine();
+
+                Console.WriteLine($"Department={departmentGroup.Key}");
+                Console.WriteLine("-----------------------------");
+
+                foreach (var emp in departmentGroup)
+                {
+                    Console.WriteLine($"Name={emp.Name},Basic={emp.BasicSalary},DepartmentId={emp.DepartmentId}");
+                }
+
+                Console.WriteLine();
+
+            }
+
+
+
+         */
+        #endregion
+
+        #endregion
+
+        public static async Task Main(string[] args)
+        {
+          
 
 
 
